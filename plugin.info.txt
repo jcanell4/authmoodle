@@ -1,0 +1,7 @@
+base   authmoodle
+author Marc Català
+email  reskit@gmail.com
+date   2014-03-04
+name   Moodle Auth Plugin
+desc   Provides user authentication against a Moodle 2 database
+url    http://ioc.xtec.cat
