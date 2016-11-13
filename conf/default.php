@@ -4,11 +4,11 @@ $conf['charset']        = 'utf8';
 $conf['debug']          = 0;
 $conf['TablesToLock']   = array('mdl_user');
 
-$conf['server']         = 'localhost';   //'192.168.5.114';
+$conf['server']         = 'localhost';   
 $conf['serverUser']     = 'localhost';   
 $conf['serverGroup']    = 'localhost';  
 $conf['user']           = 'root';
-$conf['password']       = 'momo';      //'SrdSQLAr';
+$conf['password']       = 'momo';      
 $conf['forwardClearPass'] = 0;
 $conf['database']       = 'moodle2';
 $conf['databaseUser']   = 'moodle2';
