@@ -868,9 +868,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @return int|bool insert id or 0, false on error
      */
     protected function _modifyDB($query, $typeResult="numeric") {
-        if ($this->getConf('debug') >= 2) {
-            msg('MySQL query: '.hsc($query), 0, __LINE__, __FILE__);
-        }
+        $this->_debug('MySQL query: '.hsc($query), 0, __LINE__, __FILE__, 2);
 
         if ($this->dbconGroup && $this->dbconUser) {
             $this->dbcon = (strpos($query, "wiki_group") !== FALSE) ? $this->dbconGroup : $this->dbconUser;
@@ -1019,7 +1017,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     protected function _debug($message, $err, $line, $file, $level=1) {
         if ($this->getConf('debug') < $level) return;
         msg($message, $err, $line, $file);
-//        $tag = $err===0?"Info: ":"Error($err): ";
-//        file_put_contents(DOKU_TMP_LOG, "$tag\"$message\" ($file:$line)\n", FILE_APPEND);
+        $tag = $err===0?"Info: ":"Error($err): ";
+        $date = date("d-m-Y H:i:s");
+        file_put_contents(DOKU_TMP_LOG, "$date ($tag)=> $message ($file:$line)\n", FILE_APPEND);
     }
 }
