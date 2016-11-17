@@ -2,7 +2,7 @@
 
 $conf['charset']        = 'utf8';
 $conf['debug']          = 0;
-$conf['TablesToLock']   = array('mdl_user');
+$conf['TablesToLock']   = array();
 
 $conf['server']         = 'localhost';   
 $conf['serverUser']     = 'localhost';   
