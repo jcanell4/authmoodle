@@ -454,8 +454,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     protected function _addUserToGroup($user, $group, $force = false) {
         $newgroup = 0;
 
-        if (($this->dbcon) && ($user)) {
-            //$this->dbcon = $this->dbconGroup;
+        if (($this->dbconGroup) && $this->dbconUser && ($user)) {
             $gid = $this->_getGroupID($group);
             if (!$gid) {
                 if ($force) { // create missing groups
@@ -467,15 +466,12 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             }
 
             $sql = $this->getConf('addUserGroup');
-            //$this->dbcon = $this->dbconUser;
             $uid = $this->_getUserID($user);
             $sql = str_replace('%{uid}', $this->_escape($uid), $sql);
             
-            //$this->dbcon = $this->dbconGroup;
             $sql = str_replace('%{gid}', $this->_escape($gid), $sql);
-            //$sql = str_replace('%{user}', $this->_escape($user), $sql);
-            //$sql = str_replace('%{group}', $this->_escape($group), $sql);
-            if ($this->_modifyDB($sql) !== false) 
+            $result = $this->_modifyDB($sql);
+            if ($result !== false) 
                 return true;
 
             if ($newgroup) { // remove previously created group on error
@@ -499,8 +495,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     protected function _delUserFromGroup($user, $group) {
         $rc = false;
 
+        $this->dbcon = $this->dbconGroup;
         if (($this->dbcon) && ($user)) {
-            $this->dbcon = $this->dbconGroup;
             $sql = $this->getConf('delUserGroup');
             if (strpos($sql, '%{uid}') !== false) {
                 $uid = $this->_getUserID($user);
@@ -538,7 +534,6 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                 $uid = $this->_getUserID($user);
                 $sql = str_replace('%{uid}', $this->_escape($uid), $sql);
 
-                //$this->dbcon = $this->dbconGroup;
                 $result = $this->_queryDB($sql);
 
                 if ($result !== false && count($result)) {
@@ -564,8 +559,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @return mixed  user id
      */
     protected function _getUserID($user) {
+        $this->dbcon = $this->dbconUser;
         if ($this->dbcon) {
-            $this->dbcon = $this->dbconUser;
             $sql    = str_replace('%{user}', $this->_escape($user), $this->getConf('getUserID'));
             $result = $this->_queryDB($sql);
             return ($result === false) ? false : $result[0]['id'];
@@ -665,8 +660,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @return bool|array false on error, user info on success
      */
     protected function _getUserInfo($user) {
+        $this->dbcon = $this->dbconUser;
         if ($this->dbcon) {
-            $this->dbcon = $this->dbconUser;
             $sql    = str_replace('%{user}', $this->_escape($user), $this->getConf('getUserInfo'));
             $result = $this->_queryDB($sql);
             if ($result !== false && count($result)) {
@@ -702,8 +697,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         $cnt = 0;
         $err = 0;
 
+        $this->dbcon = $this->dbconUser;
         if ($this->dbcon) {
-            $this->dbcon = $this->dbconUser;
             foreach($changes as $item => $value) {
                 switch ($item) {
                     case 'user':
@@ -756,8 +751,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @return mixed group id
      */
     protected function _getGroupID($group) {
-        if ($this->dbconGroup) {
-            $this->dbcon = $this->dbconGroup;
+        $this->dbcon = $this->dbconGroup;
+        if ($this->dbcon) {
             $sql    = str_replace('%{group}', $this->_escape($group), $this->getConf('getGroupID'));
             $result = $this->_queryDB($sql);
             return $result === false ? false : $result[0]['id'];
@@ -841,7 +836,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         }
 
         $resultarray = array();
-        $this->dbcon = (strpos($query, "wiki_group") !== FALSE) ? $this->dbconGroup : $this->dbconUser;
+        $this->dbcon = (preg_match("/wiki_(|user_)group/", $query) === 1) ? $this->dbconGroup : $this->dbconUser;
         if ($this->dbcon) {
             $result = mysqli_query($this->dbcon, $query);
             if ($result) {
@@ -870,8 +865,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     protected function _modifyDB($query, $typeResult="numeric") {
         $this->_debug('MySQL query: '.hsc($query), 0, __LINE__, __FILE__, 2);
 
-        if ($this->dbconGroup && $this->dbconUser) {
-            $this->dbcon = (strpos($query, "wiki_group") !== FALSE) ? $this->dbconGroup : $this->dbconUser;
+        $this->dbcon = (preg_match("/wiki_(|user_)group/", $query) === 1) ? $this->dbconGroup : $this->dbconUser;
+        if ($this->dbcon) {
             $result = @mysqli_query($this->dbcon, $query);
             if ($result) {
                 $rc = mysqli_insert_id($this->dbcon); //give back ID on insert
@@ -1003,6 +998,10 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $string = addcslashes($string, '%_');
         }
         return $string;
+    }
+    
+    public function cleanUser($user) {
+        return trim($user);
     }
 
     /**
