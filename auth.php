@@ -468,10 +468,10 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $sql = $this->getConf('addUserGroup');
             $uid = $this->_getUserID($user);
             $sql = str_replace('%{uid}', $this->_escape($uid), $sql);
-            
+
             $sql = str_replace('%{gid}', $this->_escape($gid), $sql);
             $result = $this->_modifyDB($sql);
-            if ($result !== false) 
+            if ($result !== false)
                 return true;
 
             if ($newgroup) { // remove previously created group on error
@@ -777,7 +777,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         }else {
             $ret = true; //connections already open
         }
-        return $ret; 
+        return $ret;
     }
 
     private function _createConnection( $server ) {
@@ -795,7 +795,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                 return $con; // connection and database successfully opened
             } else {
                 mysqli_close($con);
-                $this->_debug("MySQL err: ".mysqli_connect_errno().". No access to server database {$this->getConf("server$server")}:{$this->getConf("database$server")}.", -1, __LINE__, __FILE__);                    
+                $this->_debug("MySQL err: ".mysqli_connect_errno().". No access to server database {$this->getConf("server$server")}:{$this->getConf("database$server")}.", -1, __LINE__, __FILE__);
             }
         } else {
             $this->_debug("MySQL err: ".mysqli_connect_errno().". Connection to {$this->getConf('user')}@{$this->getConf("server$server")} not possible.", -1, __LINE__, __FILE__);
@@ -826,7 +826,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * table such as SELECT.
      * @author Matthias Grimm <matthiasgrimm@users.sourceforge.net>
      * Selecciona la conexión en función de la tabla implicada
-     * @culpable Rafael Claver 
+     * @culpable Rafael Claver
      * @param string $query  SQL string that contains the query
      * @return array with the result table
      */
@@ -870,7 +870,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $result = @mysqli_query($this->dbcon, $query);
             if ($result) {
                 $rc = mysqli_insert_id($this->dbcon); //give back ID on insert
-                if ($rc !== false) 
+                if ($rc !== false)
                     return ($typeResult == "numeric") ? $rc : $result;
             }
             $this->_debug('MySQL err: '.mysqli_error($this->dbcon), -1, __LINE__, __FILE__);
@@ -957,18 +957,17 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                 } else if($item == 'mail') {
                     if($cnt++ > 0) $SQLfilter .= " AND ";
                     $SQLfilter .= str_replace('%{email}', $tmp, $this->getConf('FilterEmail'));
-                }
-//              En esta consulta NO se puede preguntar por los grupos dado que 
+//              En esta consulta NO se puede preguntar por los grupos dado que
 //              se accede a ellos a través una conexión distinta
 //                } else if($item == 'grps') {
 //                    if($cnt++ > 0) $SQLfilter .= " AND ";
 //                    $SQLfilter .= str_replace('%{group}', $tmp, $this->getConf('FilterGroup'));
 //                }
+                } else if($item == 'username_name') {
+                    if($cnt++ > 0) $SQLfilter .= " AND ";
+                    $SQLfilter .= str_replace('%{name}', $tmp, $this->getConf('FilterUsernameName'));
+                }
             }
-
-            // we have to check SQLfilter here and must not use $cnt because if
-            // any of cnf['Filter????'] is not defined, a malformed SQL string
-            // would be generated.
 
             if(strlen($SQLfilter)) {
                 $glue = strpos(strtolower($sql), "where") ? " AND " : " WHERE ";
@@ -999,7 +998,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         }
         return $string;
     }
-    
+
     public function cleanUser($user) {
         return trim($user);
     }
