@@ -930,6 +930,28 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         return false;
     }
 
+    protected function retrieveUsersFromGroup($group){
+        $result = array();
+        
+        if(is_array($group)){
+            $tmp = $tmp = "'".implode("','",$group)."'";
+        }else{
+            $tmp = $group[0]==="'"?$group:"'".$group."'";
+        }
+
+        if ($this->_openDB()) {
+            $this->dbcon = $this->dbconGroup;
+            $this->_lockTables("READ");
+            $sql = str_replace('%{user}', $this->_escape($tmp), $this->getConf('getUsersFromGroups'));
+            $result = $this->_queryDB($sql);
+
+            $this->_unlockTables();
+            $this->_closeDB();
+        }
+        return $result;
+        
+    }
+    
     /**
      * Transforms the filter settings in an filter string for a SQL database
      * The database connection must already be established, otherwise the
@@ -957,15 +979,20 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                 } else if($item == 'mail') {
                     if($cnt++ > 0) $SQLfilter .= " AND ";
                     $SQLfilter .= str_replace('%{email}', $tmp, $this->getConf('FilterEmail'));
-//              En esta consulta NO se puede preguntar por los grupos dado que
-//              se accede a ellos a través una conexión distinta
-//                } else if($item == 'grps') {
-//                    if($cnt++ > 0) $SQLfilter .= " AND ";
-//                    $SQLfilter .= str_replace('%{group}', $tmp, $this->getConf('FilterGroup'));
-//                }
+//              En esta consulta NO se puede preguntar directamente por los grupos dado que
+//              se accede a ellos a través una conexión distinta. En consecuencia, se obtienen 
+//              primero los ID de usuarios a partir de los grupos y con estos se filtra la base de datos 
+                } else if($item == 'grps') {
+                    $aUserIds = $this->retrieveUsersFromGroup($pattern);
+                    $tmp = "'".implode("','",$aUserIds)."'";
+                    if($cnt++ > 0) $SQLfilter .= " AND ";
+                    $SQLfilter .= str_replace('%{values}', $tmp, $this->getConf('FilterByUsernames'));
                 } else if($item == 'username_name') {
                     if($cnt++ > 0) $SQLfilter .= " AND ";
                     $SQLfilter .= str_replace('%{name}', $tmp, $this->getConf('FilterUsernameName'));
+                } else if($item == 'usernames') {
+                    if($cnt++ > 0) $SQLfilter .= " AND ";
+                    $SQLfilter .= str_replace('%{values}', $tmp, $this->getConf('FilterByUsernames'));
                 }
             }
 
