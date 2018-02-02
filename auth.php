@@ -711,7 +711,10 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                         break;
                     case 'name':
                         if ($cnt++ > 0) $sql .= ", ";
-                        $sql .= str_replace('%{name}', $value, $this->getConf('UpdateName'));
+                        //$sql .= str_replace('%{name}',$value,$this->cnf['UpdateName']); ANTIGUA VERSIÓN
+                        $name = explode(" ", $value, 2);
+                        $sql .= str_replace('%{firstname}', trim($name[0]), $this->getConf('UpdateName'));
+                        $sql = str_replace('%{lastname}', trim($name[1]), $sql);
                         break;
                     case 'pass':
                         if (!$this->getConf('forwardClearPass'))
@@ -932,7 +935,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
 
     protected function retrieveUsersFromGroup($group){
         $result = array();
-        
+
         if(is_array($group)){
             $tmp = $tmp = "'".implode("','",$group)."'";
         }else{
@@ -949,9 +952,9 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $this->_closeDB();
         }
         return $result;
-        
+
     }
-    
+
     /**
      * Transforms the filter settings in an filter string for a SQL database
      * The database connection must already be established, otherwise the
@@ -980,8 +983,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                     if($cnt++ > 0) $SQLfilter .= " AND ";
                     $SQLfilter .= str_replace('%{email}', $tmp, $this->getConf('FilterEmail'));
 //              En esta consulta NO se puede preguntar directamente por los grupos dado que
-//              se accede a ellos a través una conexión distinta. En consecuencia, se obtienen 
-//              primero los ID de usuarios a partir de los grupos y con estos se filtra la base de datos 
+//              se accede a ellos a través una conexión distinta. En consecuencia, se obtienen
+//              primero los ID de usuarios a partir de los grupos y con estos se filtra la base de datos
                 } else if($item == 'grps') {
                     $aUserIds = $this->retrieveUsersFromGroup($pattern);
                     $tmp = "'".implode("','",$aUserIds)."'";
