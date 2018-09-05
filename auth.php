@@ -281,13 +281,17 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                     $grpadd = array_diff($changes['grps'], $groups);
                     $grpdel = array_diff($groups, $changes['grps']);
 
-                    foreach($grpadd as $group)
-                        if(($this->_addUserToGroup($user, $group, 1)) == false)
-                            $rc = false;
+                    if ($grpdel) {
+                        foreach($grpdel as $group)
+                            if (($this->_delUserFromGroup($user, $group)) == false)
+                                $rc = false;
+                    }
 
-                    foreach($grpdel as $group)
-                        if(($this->_delUserFromGroup($user, $group)) == false)
-                            $rc = false;
+                    if ($grpadd) {
+                        foreach($grpadd as $group)
+                            if (($this->_addUserToGroup($user, $group, 1)) == false)
+                                $rc = false;
+                    }
                 }
             }
 
@@ -458,7 +462,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $gid = $this->_getGroupID($group);
             if (!$gid) {
                 if ($force) { // create missing groups
-                    $sql      = str_replace('%{group}', $this->_escape($group), $this->getConf('addGroup'));
+                    $sql      = str_replace('%{group}', $this->_escape($group,TRUE), $this->getConf('addGroup'));
                     $gid      = $this->_modifyDB($sql);
                     $newgroup = 1; // group newly created
                 }
@@ -476,7 +480,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
 
             if ($newgroup) { // remove previously created group on error
                 $sql = str_replace('%{gid}', $this->_escape($gid), $this->getConf('delGroup'));
-                $sql = str_replace('%{group}', $this->_escape($group), $sql);
+                $sql = str_replace('%{group}', $this->_escape($group,TRUE), $sql);
                 $this->_modifyDB($sql);
             }
         }
@@ -506,7 +510,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             if ($gid) {
                 $sql = str_replace('%{user}', $this->_escape($user), $sql);
                 $sql = str_replace('%{gid}', $this->_escape($gid), $sql);
-                $sql = str_replace('%{group}', $this->_escape($group), $sql);
+                $sql = str_replace('%{group}', $this->_escape($group,TRUE), $sql);
                 $rc  = $this->_modifyDB($sql) == 0 ? true : false;
             }
         }
@@ -756,7 +760,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     protected function _getGroupID($group) {
         $this->dbcon = $this->dbconGroup;
         if ($this->dbcon) {
-            $sql    = str_replace('%{group}', $this->_escape($group), $this->getConf('getGroupID'));
+            $sql    = str_replace('%{group}', $this->_escape($group,TRUE), $this->getConf('getGroupID'));
             $result = $this->_queryDB($sql);
             return $result === false ? false : $result[0]['id'];
         }
@@ -1019,13 +1023,16 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @param  boolean $like   Escape wildcard chars as well?
      * @return string
      */
-    protected function _escape($string, $like = false) {
+    protected function _escape($string, $lower=FALSE, $like=FALSE) {
         if($this->dbcon) {
             $string = mysqli_real_escape_string($this->dbcon, $string);
         } else {
             $string = addslashes($string);
         }
-        if($like) {
+        if ($lower) {
+            $string = strtolower($string);
+        }
+        if ($like) {
             $string = addcslashes($string, '%_');
         }
         return $string;
