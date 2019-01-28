@@ -274,12 +274,13 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $this->_lockTables("WRITE");
 
             if(($uid = $this->_getUserID($user))) {
-                $rc = $this->_updateUserInfo($changes, $uid);
+                $rc = $this->_updateUserInfo($changes, $uid, $changes['ignoreNull']);
 
                 if($rc && isset($changes['grps']) && $this->cando['modGroups']) {
                     $groups = $this->_getGroups($user);
                     $grpadd = array_diff($changes['grps'], $groups);
-                    $grpdel = array_diff($groups, $changes['grps']);
+                    if (! $changes['onlyAddGroup'])
+                        $grpdel = array_diff($groups, $changes['grps']);
 
                     if ($grpdel) {
                         foreach($grpdel as $group)
@@ -363,7 +364,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @author  Matthias Grimm <matthiasgrimm@users.sourceforge.net>
      *
      * @param  int          $first  index of first user to be returned
-     * @param  int          $limit  max number of users to be returned
+     * @param  int          $limit  max number of users to be returned; 0 para recuperar todas las filas
      * @param  array|string $filter array of field/pattern pairs
      * @return  array userinfo (refer getUserData for internal userinfo details)
      */
@@ -374,7 +375,9 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $this->dbcon = $this->dbconUser;
             $this->_lockTables("READ");
             $sql = $this->_createSQLFilter($this->getConf('getUsers'), $filter);
-            $sql .= " ".$this->getConf('SortOrder')." LIMIT $first, $limit";
+            $sql .= " ".$this->getConf('SortOrder');
+            if ($limit > 0) //$limit=0 para recuperar todas las filas
+                $sql .= " LIMIT $first, $limit";
             $result = $this->_queryDB($sql);
 
             if (!empty($result)) {
@@ -690,13 +693,14 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      *
      * The password will be crypted if necessary.
      *
-     * @param  array $changes  array of items to change as pairs of item and value
-     * @param  mixed $uid      user id of dataset to change, must be unique in DB
+     * @param array $changes array of items to change as pairs of item and value
+     * @param mixed $uid     user id of dataset to change, must be unique in DB
+     * @param string $ignoreNull  TRUE=No actualizará con valores vacíos (borrar datos)
      * @return bool true on success or false on error
      *
      * @author Matthias Grimm <matthiasgrimm@users.sourceforge.net>
      */
-    protected function _updateUserInfo($changes, $uid) {
+    protected function _updateUserInfo($changes, $uid, $ignoreNull=FALSE) {
         $sql = $this->getConf('updateUser')." ";
         $cnt = 0;
         $err = 0;
@@ -704,32 +708,34 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         $this->dbcon = $this->dbconUser;
         if ($this->dbcon) {
             foreach($changes as $item => $value) {
-                switch ($item) {
-                    case 'user':
-                        if(($this->_getUserID($changes['user']))) {
-                            $err = 1; /* new username already exists */
-                            break 2; /* abort update */
-                        }
-                        if ($cnt++ > 0) $sql .= ", ";
-                        $sql .= str_replace('%{user}', $value, $this->getConf('UpdateLogin'));
-                        break;
-                    case 'name':
-                        if ($cnt++ > 0) $sql .= ", ";
-                        //$sql .= str_replace('%{name}',$value,$this->cnf['UpdateName']); ANTIGUA VERSIÓN
-                        $name = explode(" ", $value, 2);
-                        $sql .= str_replace('%{firstname}', trim($name[0]), $this->getConf('UpdateName'));
-                        $sql = str_replace('%{lastname}', trim($name[1]), $sql);
-                        break;
-                    case 'pass':
-                        if (!$this->getConf('forwardClearPass'))
-                            $value = auth_cryptPassword($value);
-                        if ($cnt++ > 0) $sql .= ", ";
-                        $sql .= str_replace('%{pass}', $value, $this->getConf('UpdatePass'));
-                        break;
-                    case 'mail':
-                        if ($cnt++ > 0) $sql .= ", ";
-                        $sql .= str_replace('%{email}', $value, $this->getConf('UpdateEmail'));
-                        break;
+                if (!empty($value) || !$ignoreNull) {
+                    switch ($item) {
+                        case 'user':
+                            if(($this->_getUserID($changes['user']))) {
+                                $err = 1; /* new username already exists */
+                                break 2; /* abort update */
+                            }
+                            if ($cnt++ > 0) $sql .= ", ";
+                            $sql .= str_replace('%{user}', $value, $this->getConf('UpdateLogin'));
+                            break;
+                        case 'name':
+                            if ($cnt++ > 0) $sql .= ", ";
+                            //$sql .= str_replace('%{name}',$value,$this->cnf['UpdateName']); ANTIGUA VERSIÓN
+                            $name = explode(" ", $value, 2);
+                            $sql .= str_replace('%{firstname}', trim($name[0]), $this->getConf('UpdateName'));
+                            $sql = str_replace('%{lastname}', trim($name[1]), $sql);
+                            break;
+                        case 'pass':
+                            if (!$this->getConf('forwardClearPass'))
+                                $value = auth_cryptPassword($value);
+                            if ($cnt++ > 0) $sql .= ", ";
+                            $sql .= str_replace('%{pass}', $value, $this->getConf('UpdatePass'));
+                            break;
+                        case 'mail':
+                            if ($cnt++ > 0) $sql .= ", ";
+                            $sql .= str_replace('%{email}', $value, $this->getConf('UpdateEmail'));
+                            break;
+                    }
                 }
             }
 
