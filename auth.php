@@ -598,7 +598,15 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $this->dbcon = $this->dbconUser;
             $sql = str_replace('%{user}', $this->_escape($user), $this->getConf('addUser'));
             $sql = str_replace('%{pass}', $this->_escape($pwd), $sql);
-            $sql = str_replace('%{name}', $this->_escape($name), $sql);
+            $name = $this->_escape($name);
+            $aname = explode(",", $name);
+            if (!isset($aname[1])) {
+                $aname = explode(" ", $name, 2);
+            }
+            $firstname = $aname[0];
+            $lastname = $aname[1];
+            $sql = str_replace('%{firstname}', $firstname, $sql);
+            $sql = str_replace('%{lastname}', $lastname, $sql);
             $sql = str_replace('%{email}', $this->_escape($mail), $sql);
             $uid = $this->_modifyDB($sql);
             $gid = false;
