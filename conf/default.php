@@ -2,6 +2,7 @@
 
 $conf['charset']        = 'utf8';
 $conf['debug']          = 0;
+$conf['logFile'] = "auth.log";
 $conf['TablesToLock']   = array();
 
 $conf['server']         = 'localhost';   

@@ -151,9 +151,11 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $sql    = str_replace('%{user}', $this->_escape($user), $sql);
             $sql    = str_replace('%{pass}', $this->_escape($pass), $sql);
             $sql    = str_replace('%{dgroup}', $this->_escape($conf['defaultgroup']), $sql);
+            $this->_debug('MySQL query: '.hsc($sql), 0, __LINE__, __FILE__, 2);
             $result = $this->_queryDB($sql);
 
             if($result !== false && count($result) == 1) {
+                $this->_debug('MySQL result: OK', 0, __LINE__, __FILE__, 2);
                 if($this->getConf('forwardClearPass') == 1) {
                     $rc = true;
                 } else {
@@ -172,6 +174,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                     }
                     $rc = ($status === 0);
                 }
+            }else{
+                $this->_debug('MySQL result: FALSE', 0, __LINE__, __FILE__, 2);                
             }
             $this->_closeDB();
         }
@@ -801,6 +805,9 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         }else {
             $ret = true; //connections already open
         }
+        if(!$ret){
+            $this->_debug("MySQL err: DB can't be opened.", -1, __LINE__, __FILE__);            
+        }
         return $ret;
     }
 
@@ -1073,6 +1080,10 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         msg($message, $err, $line, $file);
         $tag = $err===0?"Info: ":"Error($err): ";
         $date = date("d-m-Y H:i:s");
-        file_put_contents(DOKU_TMP_LOG, "$date ($tag)=> $message ($file:$line)\n", FILE_APPEND);
+        $f = $this->getConf('logFile');
+        if($f[0]!=='/'){
+            $f = DOKU_INC."lib/plugins/tmp/$f";
+        }
+        file_put_contents($f, "$date ($tag)=> $message ($file:$line)\n", FILE_APPEND);
     }
 }
