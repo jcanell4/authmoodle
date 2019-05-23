@@ -863,7 +863,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      */
     protected function _queryDB($query) {
         if ($this->getConf('debug') >= 2) {
-            msg('MySQL query: '.hsc($query), 0, __LINE__, __FILE__);
+            $this->_debug('MySQL query: '.hsc($query), 0, __LINE__, __FILE__);
         }
 
         $resultarray = array();
@@ -973,7 +973,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         if ($this->_openDB()) {
             $this->dbcon = $this->dbconGroup;
             $this->_lockTables("READ");
-            $sql = str_replace('%{user}', $this->_escape($tmp), $this->getConf('getUsersFromGroups'));
+            $sql = str_replace('%{groups}', $this->_escape($tmp), $this->getConf('getUsersFromGroups'));
             $result = $this->_queryDB($sql);
 
             $this->_unlockTables();
