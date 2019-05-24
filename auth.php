@@ -968,7 +968,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             foreach ($group as $g) {
                 $tmp .= "'".$this->_escape($g)."',";
             }
-            $tmp = substr($tmp, 0 -1);
+            $tmp = substr($tmp, 0, -1);
         }else{
             $tmp = "'".$this->_escape(trim($group, "'"))."'";
         }
