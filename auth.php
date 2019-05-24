@@ -175,7 +175,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                     $rc = ($status === 0);
                 }
             }else{
-                $this->_debug('MySQL result: FALSE', 0, __LINE__, __FILE__, 2);                
+                $this->_debug('MySQL result: FALSE', 0, __LINE__, __FILE__, 2);
             }
             $this->_closeDB();
         }
@@ -806,7 +806,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $ret = true; //connections already open
         }
         if(!$ret){
-            $this->_debug("MySQL err: DB can't be opened.", -1, __LINE__, __FILE__);            
+            $this->_debug("MySQL err: DB can't be opened.", -1, __LINE__, __FILE__);
         }
         return $ret;
     }
@@ -964,16 +964,19 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     protected function retrieveUsersFromGroup($group){
         $result = array();
 
-        if(is_array($group)){
-            $tmp = $tmp = "'".implode("','",$group)."'";
+        if (is_array($group)){
+            foreach ($group as $g) {
+                $tmp .= "'".$this->_escape($g)."',";
+            }
+            $tmp = substr($tmp, 0 -1);
         }else{
-            $tmp = $group[0]==="'"?$group:"'".$group."'";
+            $tmp = "'".$this->_escape(trim($group, "'"))."'";
         }
 
         if ($this->_openDB()) {
             $this->dbcon = $this->dbconGroup;
             $this->_lockTables("READ");
-            $sql = str_replace('%{groups}', $this->_escape($tmp), $this->getConf('getUsersFromGroups'));
+            $sql = str_replace('%{groups}', $tmp, $this->getConf('getUsersFromGroups'));
             $result = $this->_queryDB($sql);
 
             $this->_unlockTables();
