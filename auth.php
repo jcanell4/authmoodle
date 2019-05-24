@@ -964,13 +964,16 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     protected function retrieveUsersFromGroup($group){
         $result = array();
 
-        if (is_array($group)){
+        if (!is_array($group)) {
+            $tmp = str_replace("'", "", $group);
+            $group = $tmp = explode(",", $tmp);
+        }
+        if (!empty($group) && is_array($group)){
+            $tmp = "";
             foreach ($group as $g) {
-                $tmp .= "'".$this->_escape($g)."',";
+                $tmp .= "'".$this->_escape(trim($g, "'"))."',";
             }
             $tmp = substr($tmp, 0, -1);
-        }else{
-            $tmp = "'".$this->_escape(trim($group, "'"))."'";
         }
 
         if ($this->_openDB()) {
