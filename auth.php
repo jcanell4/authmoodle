@@ -962,7 +962,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     }
 
     protected function retrieveUsersFromGroup($group){
-        $result = array();
+        $result = "";
 
         if (!is_array($group)) {
             $tmp = str_replace("'", "", $group);
@@ -980,10 +980,14 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $this->dbcon = $this->dbconGroup;
             $this->_lockTables("READ");
             $sql = str_replace('%{groups}', $tmp, $this->getConf('getUsersFromGroups'));
-            $result = $this->_queryDB($sql);
+            $sqlresult = $this->_queryDB($sql);
 
             $this->_unlockTables();
-            $this->_closeDB();
+
+            foreach($sqlresult as $row) {
+                $result .= $row['user_id'].",";
+            }
+            $result = substr($result, 0, -1);
         }
         return $result;
 
@@ -1022,10 +1026,9 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                 //se accede a ellos a través una conexión distinta. En consecuencia, se obtienen
                 //primero los ID de usuarios a partir de los grupos y con estos se filtra la base de datos
                 } else if($item == 'grps') {
-                    $aUserIds = $this->retrieveUsersFromGroup($pattern);
-                    $tmp = ($aUserIds) ? "'".implode("','",$aUserIds)."'" : "''";
-                    if($cnt++ > 0) $SQLfilter .= " AND ";
-                    $SQLfilter .= str_replace('%{values}', $tmp, $this->getConf('FilterByUsernames'));
+                    $tmp = $this->retrieveUsersFromGroup($pattern);
+                    if ($cnt++ > 0) $SQLfilter .= " AND ";
+                    $SQLfilter .= str_replace('%{values}', $tmp, $this->getConf('FilterByUserId'));
                 } else if($item == 'username_name') {
                     if($cnt++ > 0) $SQLfilter .= " AND ";
                     $SQLfilter .= str_replace('%{name}', $tmp, $this->getConf('FilterUsernameName'));
