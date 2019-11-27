@@ -15,6 +15,7 @@ $lang['getUsers']         = 'SQL statement to list all users';
 $lang['FilterLogin']      = 'SQL clause for filtering users by login name';
 $lang['FilterName']       = 'SQL clause for filtering users by full name';
 $lang['FilterEmail']      = 'SQL clause for filtering users by email address';
+$lang['FilterMoodle']     = 'SQL clause for filtering users by moodle verification';
 $lang['FilterGroup']      = 'SQL clause for filtering users by group membership';
 $lang['SortOrder']        = 'SQL clause to sort users';
 $lang['addUser']          = 'SQL statement to add a new user';
@@ -28,11 +29,11 @@ $lang['updateUser']       = 'SQL statement to update a user profile';
 $lang['UpdateLogin']      = 'Update clause for updating the user\'s login name';
 $lang['UpdatePass']       = 'Update clause for updating the user\'s password';
 $lang['UpdateEmail']      = 'Update clause for updating the user\'s email address';
+$lang['UpdateMoodle']     = 'Update clause for updating the user\'s moodle verification';
 $lang['UpdateName']       = 'Update clause for updating the user\'s full name';
 $lang['UpdateTarget']     = 'Limit clause to identify the user when updating';
 $lang['delUserGroup']     = 'SQL statement to remove a user from a given group';
 $lang['getGroupID']       = 'SQL statement to get the primary key of a given group';
-
 
 $lang['debug_o_0'] = 'none';
 $lang['debug_o_1'] = 'on errors only';

@@ -2,14 +2,14 @@
 
 $conf['charset']        = 'utf8';
 $conf['debug']          = 0;
-$conf['logFile'] = "auth.log";
+$conf['logFile']        = "auth.log";
 $conf['TablesToLock']   = array();
 
-$conf['server']         = 'localhost';   
-$conf['serverUser']     = 'localhost';   
-$conf['serverGroup']    = 'localhost';  
+$conf['server']         = 'localhost';
+$conf['serverUser']     = 'localhost';
+$conf['serverGroup']    = 'localhost';
 $conf['user']           = '';
-$conf['password']       = '';      
+$conf['password']       = '';
 $conf['forwardClearPass'] = 0;
 $conf['database']       = '';
 $conf['databaseUser']   = '';
@@ -22,11 +22,13 @@ $conf['getUserID']      = '';
 $conf['FilterLogin']    = '';
 $conf['FilterName']     = '';
 $conf['FilterEmail']    = '';
+$conf['FilterMoodle']   = '';
 $conf['SortOrder']      = '';
 $conf['updateUser']     = '';
 $conf['UpdateLogin']    = '';
 $conf['UpdatePass']     = '';
 $conf['UpdateEmail']    = '';
+$conf['UpdateMoodle']   = '';
 $conf['UpdateName']     = '';
 $conf['UpdateTarget']   = '';
 $conf['addUser']        = '';

@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Bruno Veilleux <bruno.vey@gmail.com>
  */
 $lang['server']                = 'Votre serveur MySQL';
@@ -20,6 +20,7 @@ $lang['getUsers']              = 'Requête SQL pour énumérer tous les utilisat
 $lang['FilterLogin']           = 'Clause SQL pour filtrer les utilisateurs par identifiant';
 $lang['FilterName']            = 'Clause SQL pour filtrer les utilisateurs par nom complet';
 $lang['FilterEmail']           = 'Clause SQL pour filtrer les utilisateurs par adresse électronique';
+$lang['FilterMoodle']          = 'Clause SQL pour filtrer les utilisateurs par la validation in moodle';
 $lang['FilterGroup']           = 'Clause SQL pour filtrer les utilisateurs par groupes';
 $lang['SortOrder']             = 'Clause SQL pour trier les utilisateurs';
 $lang['addUser']               = 'Requête SQL pour ajouter un nouvel utilisateur';
@@ -33,6 +34,7 @@ $lang['updateUser']            = 'Requête SQL pour mettre à jour le profil d\'
 $lang['UpdateLogin']           = 'Clause de mise à jour pour mettre à jour l\'identifiant d\'un utilisateur';
 $lang['UpdatePass']            = 'Clause de mise à jour pour mettre à jour le mot de passe d\'un utilisateur';
 $lang['UpdateEmail']           = 'Clause de mise à jour pour mettre à jour l\'adresse électronique d\'un utilisateur';
+$lang['UpdateMoodle']          = 'Clause de mise à jour pour mettre à jour la validation in moodle';
 $lang['UpdateName']            = 'Clause de mise à jour pour mettre à jour le nom complet d\'un utilisateur';
 $lang['UpdateTarget']          = 'Clause de limite pour identifier l\'utilisateur durant une mise à jour';
 $lang['delUserGroup']          = 'Requête SQL pour retirer un utilisateur d\'un groupe donné';
