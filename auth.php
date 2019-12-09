@@ -14,6 +14,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     protected $dbver = 0;   // @var int database version
     protected $dbrev = 0;   // @var int database revision
     protected $dbsub = 0;   // @var int database subrevision
+    protected $moodleToken="";
 
     /**
      * Constructor
@@ -66,7 +67,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                  'UpdateTarget'
             ), true
         );
-        $this->cando['modPass']   = $this->cando['modLogin'];
+        $this->cando['modPass']   = false;
         $this->cando['modName']   = $this->cando['modLogin'];
         $this->cando['modMail']   = $this->cando['modLogin'];
         $this->cando['modMoodle'] = $this->cando['modLogin'];
@@ -106,6 +107,14 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             }
             $this->_debug("authmoodle cando: " . $candoDebug, 0, __LINE__, __FILE__);
         }
+    }
+    
+    public function getMoodleToken(){
+        return $this->moodleToken;
+    }
+
+    public function hasMoodleToken(){
+        return !empty($this->moodleToken);
     }
 
     /**
@@ -157,6 +166,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             if ($info['moodle']) {
                 $ws = new WsMoodleClient();
                 $ws->updateToken($user, $pass);
+                $this->moodleToken = $ws->getToken();
                 $rc = !empty($ws->getToken());
             }else {
                 $rc = $this->_checkPass($user, $pass);
