@@ -67,7 +67,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                  'UpdateTarget'
             ), true
         );
-        $this->cando['modPass']   = false;
+        $this->cando['modPass']   = $this->cando['modLogin'];
         $this->cando['modName']   = $this->cando['modLogin'];
         $this->cando['modMail']   = $this->cando['modLogin'];
         $this->cando['modMoodle'] = $this->cando['modLogin'];
