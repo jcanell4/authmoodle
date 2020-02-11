@@ -108,7 +108,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $this->_debug("authmoodle cando: " . $candoDebug, 0, __LINE__, __FILE__);
         }
     }
-    
+
     public function getMoodleToken(){
         return $this->moodleToken;
     }
@@ -327,7 +327,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             if(($uid = $this->_getUserID($user))) {
                 $rc = $this->_updateUserInfo($changes, $uid, $changes['ignoreNull']);
 
-                if($rc && isset($changes['grps']) && $this->cando['modGroups']) {
+                if ($rc && isset($changes['grps']) && $this->cando['modGroups']) {
                     $groups = $this->_getGroups($user);
                     $grpadd = array_diff($changes['grps'], $groups);
                     if (! $changes['onlyAddGroup'])
@@ -335,18 +335,20 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
 
                     if ($grpdel) {
                         foreach($grpdel as $group)
-                            if (($this->_delUserFromGroup($user, $group)) == false)
-                                $rc = false;
+                            $rc = $rc && $this->_delUserFromGroup($user, $group);
                     }
 
                     if ($grpadd) {
                         foreach($grpadd as $group)
-                            if (($this->_addUserToGroup($user, $group, 1)) == false)
-                                $rc = false;
+                            $rc = $rc && $this->_addUserToGroup($user, $group, 1);
                     }
                 }
-            }
 
+                if ($rc && isset($changes['delgrps']) && $this->cando['modGroups']) {
+                    foreach($changes['delgrps'] as $group)
+                        $rc = $rc && $this->_delUserFromGroup($user, $group);
+                }
+            }
             $this->_unlockTables();
             $this->_closeDB();
         }
