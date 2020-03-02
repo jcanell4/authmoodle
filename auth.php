@@ -71,6 +71,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         $this->cando['modName']   = $this->cando['modLogin'];
         $this->cando['modMail']   = $this->cando['modLogin'];
         $this->cando['modMoodle'] = $this->cando['modLogin'];
+        $this->cando['modEditor'] = $this->cando['modLogin'];
         $this->cando['modGroups'] = $this->_chkcnf(
             array(
                  'getUserID',
@@ -80,7 +81,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                  'addUserGroup',
                  'delGroup',
                  'getGroupID',
-                 'delUserGroup'
+                 'delUserGroup',
+                 'delUserRelGroup'
             ), true
         );
         /* getGroups is not yet supported
@@ -264,10 +266,11 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @param string $name  full name of the user
      * @param string $mail  email address
      * @param string $moodle as user account in moodle?
+     * @param string $editor editor utilizado por el usuario
      * @param array  $grps  array of groups the user should become member of
      * @return bool|null
      */
-    public function createUser($user, $pwd, $name, $mail, $moodle, $grps = null) {
+    public function createUser($user, $pwd, $name, $mail, $moodle, $editor, $grps = null) {
         global $conf;
 
         if ($this->_openDB()) {
@@ -280,7 +283,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
 
             $this->_lockTables("WRITE");
             $pwd = $this->getConf('forwardClearPass') ? $pwd : auth_cryptPassword($pwd);
-            $rc  = $this->_addUser($user, $pwd, $name, $mail, $moodle, $grps);
+            $rc  = $this->_addUser($user, $pwd, $name, $mail, $moodle, $editor, $grps);
             $this->_unlockTables();
             $this->_closeDB();
             if($rc) return true;
@@ -644,10 +647,11 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @param  string $name  full name of the user
      * @param  string $mail  email address
      * @param  string $moodle as user account in moodle?
+     * @param  string $editor editor utilizado por el usuario
      * @param  array  $grps  array of groups the user should become member of
      * @return bool
      */
-    protected function _addUser($user, $pwd, $name, $mail, $moodle, $grps) {
+    protected function _addUser($user, $pwd, $name, $mail, $moodle, $editor, $grps) {
         if ($this->dbcon && is_array($grps)) {
             $this->dbcon = $this->dbconUser;
             $sql = str_replace('%{user}', $this->_escape($user), $this->getConf('addUser'));
@@ -666,6 +670,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             $sql = str_replace('%{lastname}', $lastname, $sql);
             $sql = str_replace('%{email}', $this->_escape($mail), $sql);
             $sql = str_replace('%{moodle}', $this->_escape($moodle), $sql);
+            $sql = str_replace('%{editor}', $this->_escape($editor), $sql);
             $uid = $this->_modifyDB($sql);
             $gid = false;
             $group = '';
@@ -694,11 +699,6 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
 
     /**
      * Deletes a given user and all his group references.
-     *
-     * The database connection must already be established
-     * for this function to work. Otherwise it will return
-     * false.
-     *
      * @author Matthias Grimm <matthiasgrimm@users.sourceforge.net>
      *
      * @param  string $user user whose id is desired
@@ -706,18 +706,19 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      */
     protected function _delUser($user) {
         if ($this->dbcon) {
+            $this->dbcon = $this->dbconUser;
             $uid = $this->_getUserID($user);
             if ($uid) {
-                $this->dbcon = $this->dbconUser;
                 $sql = str_replace('%{uid}', $this->_escape($uid), $this->getConf('delUserRefs'));
-                $this->_modifyDB($sql);
-                $sql = str_replace('%{uid}', $this->_escape($uid), $this->getConf('delUser'));
-                $sql = str_replace('%{user}', $this->_escape($user), $sql);
-                $this->_modifyDB($sql);
-                return true;
+                $ret = ($this->_modifyDB($sql)===0) ? true : false;
+                if ($ret) {
+                    $this->dbcon = $this->dbconGroup;
+                    $sql = str_replace('%{uid}', $this->_escape($uid), $this->getConf('delUserRelGroup'));
+                    $ret  = ($this->_modifyDB($sql) == 0) ? true : false;
+                }
             }
         }
-        return false;
+        return $ret;
     }
 
     /**
@@ -804,6 +805,10 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                         case 'moodle':
                             if ($cnt++ > 0) $sql .= ", ";
                             $sql .= str_replace('%{moodle}', $value, $this->getConf('UpdateMoodle'));
+                            break;
+                        case 'editor':
+                            if ($cnt++ > 0) $sql .= ", ";
+                            $sql .= str_replace('%{editor}', $value, $this->getConf('UpdateEditor'));
                             break;
                     }
                 }
@@ -1080,6 +1085,9 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
                 } else if($item == 'moodle') {
                     if($cnt++ > 0) $SQLfilter .= " AND ";
                     $SQLfilter .= str_replace('%{moodle}', $pattern, $this->getConf('FilterMoodle'));
+                } else if($item == 'editor') {
+                    if($cnt++ > 0) $SQLfilter .= " AND ";
+                    $SQLfilter .= str_replace('%{editor}', $pattern, $this->getConf('FilterEditor'));
                 //En esta consulta NO se puede preguntar directamente por los grupos dado que
                 //se accede a ellos a través una conexión distinta. En consecuencia, se obtienen
                 //primero los ID de usuarios a partir de los grupos y con estos se filtra la base de datos
