@@ -33,4 +33,5 @@ $meta['UpdateMoodle']     = array('string','_caution' => 'danger');
 $meta['UpdateName']       = array('string','_caution' => 'danger');
 $meta['UpdateTarget']     = array('string','_caution' => 'danger');
 $meta['delUserGroup']     = array('','_caution' => 'danger');
+$meta['delUserRelGroup']  = array('','_caution' => 'danger');
 $meta['getGroupID']       = array('','_caution' => 'danger');

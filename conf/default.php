@@ -43,3 +43,4 @@ $conf['addGroup']       = '';
 $conf['addUserGroup']   = '';
 $conf['delGroup']       = '';
 $conf['delUserGroup']   = '';
+$conf['delUserRelGroup']= '';

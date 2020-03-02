@@ -57,7 +57,8 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
             array(
                  'getUserID',
                  'delUser',
-                 'delUserRefs'
+                 'delUserRefs',
+                 'delUserRelGroup'
             ), true
         );
         $this->cando['modLogin']  = $this->_chkcnf(
