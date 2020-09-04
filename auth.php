@@ -1143,6 +1143,37 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
     }
 
     /**
+     * @param  string $user username
+     * @return boolean The username exist
+     */
+    public function validUser($user) {
+        if ($this->_openDB()) {
+            $this->dbcon = $this->dbconUser;
+            $this->_lockTables("READ");
+            $sql = str_replace('%{user}', $user, $this->getConf('getUserID'));
+            $sqlresult = $this->_queryDB($sql);
+            $this->_unlockTables();
+        }
+        return ($sqlresult);
+    }
+
+    /**
+     * Groupnames are to be passed without a leading '@' here.
+     * @param  string $group groupname
+     * @return boolean The groupname exist
+     */
+    public function validGroup($group) {
+        if ($this->_openDB()) {
+            $this->dbcon = $this->dbconGroup;
+            $this->_lockTables("READ");
+            $sql = str_replace('%{group}', $group, $this->getConf('getGroupID'));
+            $sqlresult = $this->_queryDB($sql);
+            $this->_unlockTables();
+        }
+        return ($sqlresult);
+    }
+
+    /**
      * Wrapper around msg() but outputs only when debug is enabled
      *
      * @param string $message
