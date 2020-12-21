@@ -164,7 +164,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      */
     public function checkPass($user, $pass) {
         $rc = false;
-        $info = $this->getUserData($user);
+        $info = $this->getUserData($user, $requireGroups=true);
         if ($info) {
             if ($info['moodle']) {
                 $ws = new WsMoodleClient();
@@ -240,7 +240,7 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @param string $user user login to get data for
      * @return array|bool
      */
-    public function getUserData($user) {
+    public function getUserData($user, $requireGroups=true) {
         if($this->_openDB()) {
             $this->_lockTables("READ");
             $info = $this->_getUserInfo($user);
