@@ -589,26 +589,32 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
      * @param  string $user user whose groups should be listed
      * @return bool|array false on error, all groups on success
      */
-    protected function _getGroups($user) {
-        $groups = array();
+protected function _getGroups($user) {
+    $groups = array();
 
-        if ($this->dbcon) {
-            $sql = $this->getConf('getGroups');
-            if (strpos($sql, '%{uid}') !== false) {
-                $uid = $this->_getUserID($user);
-                $sql = str_replace('%{uid}', $this->_escape($uid), $sql);
+    if ($this->dbcon) {
+        $sql = $this->getConf('getGroups');
+        if (strpos($sql, '%{uid}') !== false) {
+            $uid = $this->_getUserID($user);
+            $sql = str_replace('%{uid}', $this->_escape($uid), $sql);
 
-                $result = $this->_queryDB($sql);
+            $result = $this->_queryDB($sql);
 
-                if ($result !== false && count($result)) {
-                    foreach($result as $row)
-                        $groups[] = $row['groupname'];
+            if ($result !== false && count($result)) {
+                $no_group_user = true;
+                foreach($result as $row) {
+                    $groups[] = $row['groupname'];
+                    $no_group_user &= ($row['groupname'] != 'user');
                 }
-                return $groups;
+                if ($no_group_user) {
+                    $groups[] = 'user';
+                }
             }
+            return $groups;
         }
-        return false;
     }
+    return false;
+}
 
     /**
      * Retrieves the user id of a given user name
