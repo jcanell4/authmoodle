@@ -166,12 +166,15 @@ class auth_plugin_authmoodle extends DokuWiki_Auth_Plugin {
         $rc = false;
         $info = $this->getUserData($user, $requireGroups=true);
         if ($info) {
+            //$this->_debug("authmoodle checkPass: " . $user, 0, __LINE__, __FILE__);
             if ($info['moodle']) {
+                //$this->_debug("authmoodle checkPass: is infor moodle", 0, __LINE__, __FILE__);
                 $ws = new WsMoodleClient();
                 $ws->updateToken($user, $pass);
                 $this->moodleToken = $ws->getToken();
                 $rc = !empty($ws->getToken());
             }else {
+                //$this->_debug("authmoodle checkPass: not moodle", 0, __LINE__, __FILE__);
                 $rc = $this->_checkPass($user, $pass);
             }
         }
