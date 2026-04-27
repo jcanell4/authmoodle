@@ -1,4 +1,4 @@
-<?php
+ <?php
 if(!defined('DOKU_INC')) die();
 /**
  * Moodle authentication backend
